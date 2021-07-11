@@ -1,7 +1,8 @@
 {
     "name": "kpolicar/backendtrafficcop-plugin",
     "type": "october-plugin",
-    "description": "No description provided yet...",
+    "description": "Backend Traffic Cop for OctoberCMS",
+    "keywords": ["backend", "prevent", "unsaved", "simultaneous", "concurrent", "changes", "multiple", "conflict"],
     "require": {
         "composer/installers": "~1.0"
     }
