@@ -13,5 +13,6 @@ class ModelHasChangedException extends \Exception implements HttpExceptionInterf
 
     public function getHeaders()
     {
+        return [];
     }
 }

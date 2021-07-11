@@ -2,6 +2,7 @@
 
 use App;
 use Backend;
+use Backend\Widgets\Form as BackendForm;
 use Carbon\Carbon;
 use Kpolicar\BackendMenuPinnedPages\Models\PinnedPage;
 use Kpolicar\BackendTrafficCop\Exceptions\ModelHasChangedException;
@@ -29,7 +30,7 @@ class Plugin extends PluginBase
             'name'        => 'kpolicar.backendtrafficcop::lang.plugin.name',
             'description' => 'kpolicar.backendtrafficcop::lang.plugin.description',
             'author'      => 'Klemen Janez Poličar',
-            'icon'        => 'icon-leaf'
+            'icon'        => 'icon-random'
         ];
     }
 
@@ -41,7 +42,7 @@ class Plugin extends PluginBase
     public function register()
     {
         App::error(function (ModelHasChangedException $e) {
-            return 'Another user has updated this record since this page was loaded. Would you like to save anyway?';
+            return e(trans('kpolicar.backendtrafficcop::lang.popup.message'));
         });
     }
 
@@ -56,13 +57,13 @@ class Plugin extends PluginBase
             return;
 
 
-        BackendController::extend(function($controller) {
-            if (BackendAuth::check()) {
-                $controller->addJs('/plugins/kpolicar/backendtrafficcop/assets/js/traffic-cop.js', ['defer' => true]);
-            }
+        BackendForm::extend(function($widget) {
+            $widget->addJs('/plugins/kpolicar/backendtrafficcop/assets/js/traffic-cop.js', ['defer' => true]);
         });
 
-        \Event::listen('backend.form.extendFields', function (Backend\Widgets\Form $form) {
+        \Event::listen('backend.form.extendFields', function (BackendForm $form) {
+            if (!$form->model->exists)
+                return;
             $form->addFields([
                 '_retrieved_at' => [
                     'type' => 'text',
@@ -77,9 +78,9 @@ class Plugin extends PluginBase
         Model::extend(function (Model $model) {
             $model->addDynamicProperty('_retried_at', null);
             $model->addDynamicMethod('hasBeenSavedSinceRetrieval', function () use ($model) {
-                return Carbon::parse($model->_retrieved_at)->isBefore($model->updated_at);
+                return $model->exists && Carbon::parse($model->_retrieved_at)->isBefore($model->updated_at);
             });
-            if (!post('_confirmed')) {
+            if (!post('_kpolicar_backendtrafficcop_confirmed')) {
                 $model->bindEventOnce('model.saveInternal', function ($attributes, $options) use ($model) {
                     throw_if(
                         $model->hasBeenSavedSinceRetrieval(),
