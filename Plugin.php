@@ -76,7 +76,7 @@ class Plugin extends PluginBase
         });
 
         Model::extend(function (Model $model) {
-            $model->addDynamicProperty('_retried_at', null);
+            $model->addDynamicProperty('_retrieved_at', null);
             $model->addDynamicMethod('hasBeenSavedSinceRetrieval', function () use ($model) {
                 return $model->exists && Carbon::parse($model->_retrieved_at)->isBefore($model->updated_at);
             });
